@@ -3,10 +3,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,11 +14,11 @@ public class Main {
     private static final int BLUE = 14;
 
     public static void main(String[] args) throws URISyntaxException, IOException {
+        int part1 = part1();
+        int part2 = part2();
 
-        int sum = part1();
-
-        System.out.println(sum);
-
+        System.out.println(part1);
+        System.out.println(part2);
     }
 
     private static int part1() throws URISyntaxException, IOException {
@@ -30,6 +28,30 @@ public class Main {
                 .map(Game::id)
                 .mapToInt(Integer::intValue)
                 .sum();
+    }
+
+    private static int part2() throws URISyntaxException, IOException {
+        return readFile()
+                .map(Main::toGame)
+                .map(Main::toMinGameSet)
+                .peek(System.out::println)
+                .map(GameSet::power)
+                .mapToInt(Integer::intValue)
+                .sum();
+    }
+
+    private static GameSet toMinGameSet(Game game) {
+        int green = maxResult(game, set -> set.green);
+        int red = maxResult(game, set -> set.red);
+        int blue = maxResult(game, set -> set.blue);
+        return new GameSet(red, green, blue);
+    }
+
+    private static int maxResult(Game game, Function<GameSet, Integer> gameSetIntegerFunction) {
+        return game.gameSets.stream()
+                .map(gameSetIntegerFunction)
+                .max(Integer::compareTo)
+                .orElse(0);
     }
 
     private static Game toGame(String s) {
@@ -77,6 +99,8 @@ public class Main {
     }
 
     private record GameSet(int red, int green, int blue) {
-
+        public int power() {
+            return red * green * blue;
+        }
     }
 }
